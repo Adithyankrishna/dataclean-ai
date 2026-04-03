@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DataClean AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #7c6aff;
+      --accent2: #00d4aa;
+      --accent3: #ff6b6b;
+      --text: #e0e0f0;
+      --muted: #5a5a7a;
+      --success: #00d4aa;
+      --error: #ff6b6b;
+      --warning: #ffd166;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,106,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,106,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .logo span:first-child { color: var(--accent); }
+    .logo span:last-child { color: var(--accent2); }
+
+    .tagline {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .card:focus-within::before, .card.active::before { opacity: 1; }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(124,106,255,0.05);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .upload-text {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .upload-text strong {
+      color: var(--accent);
+      display: block;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    /* Prompt input */
+    .prompt-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .prompt-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .prompt-input:focus { border-color: var(--accent); }
+    .prompt-input::placeholder { color: var(--muted); }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 24px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: #9580ff; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 11px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+      background: transparent;
+    }
+
+    .btn-success {
+      background: var(--accent2);
+      color: var(--bg);
+    }
+
+    .btn-success:hover { background: #00bfa0; }
+
+    /* Suggestions */
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .suggestion-chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .suggestion-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Log */
+    .log-container {
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .log-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .log-entry:last-child { border-bottom: none; }
+
+    .log-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .log-dot.success { background: var(--success); }
+    .log-dot.error { background: var(--error); }
+    .log-dot.info { background: var(--accent); }
+
+    .log-text { color: var(--text); flex: 1; }
+    .log-action { color: var(--muted); font-size: 10px; }
+
+    /* Table */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    thead {
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+    }
+
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      color: var(--accent);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(30,30,46,0.6);
+      color: var(--text);
+      white-space: nowrap;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(124,106,255,0.04); }
+
+    td.missing-val { color: var(--error); font-style: italic; }
+
+    /* Missing summary */
+    .missing-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .missing-badge {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 11px;
+    }
+
+    .missing-badge span { color: var(--error); font-weight: 700; margin-left: 6px; }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .status-dot.ready { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .status-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
+    .status-dot.error { background: var(--error); }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+
+    /* Section header row */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    @media (max-width: 600px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .prompt-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <span>Data</span><span>Clean</span>
+      </div>
+      <div class="tagline">AI-Powered CSV Cleaning · Natural Language Interface</div>
+    </header>
+
+    <!-- Status Bar -->
+    <div class="status-bar" id="statusBar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Upload a CSV file to get started</span>
+    </div>
+
+    <br/>
+
+    <!-- Upload Card -->
+    <div class="card" id="uploadCard">
+      <div class="card-title">01 — Upload Dataset</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept=".csv"/>
+        <div class="upload-icon">📂</div>
+        <div class="upload-text">
+          <strong>Drop CSV here or click to browse</strong>
+          Only .csv files are supported
+        </div>
+      </div>
+
+      <!-- Stats (hidden until upload) -->
+      <div id="statsSection" class="hidden">
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-value" id="statRows">—</div>
+            <div class="stat-label">Rows</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="statCols">—</div>
+            <div class="stat-label">Columns</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="statMissing" style="color:var(--error)">—</div>
+            <div class="stat-label">Missing</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="statDupes" style="color:var(--warning)">—</div>
+            <div class="stat-label">Duplicates</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prompt Card (hidden until upload) -->
+    <div class="card hidden" id="promptCard">
+      <div class="card-title">02 — Clean with Natural Language</div>
+      <div class="prompt-row">
+        <input
+          type="text"
+          class="prompt-input"
+          id="promptInput"
+          placeholder='e.g. "remove duplicates and fill missing age with median"'
+        />
+        <button class="btn" id="cleanBtn" onclick="runClean()">Run →</button>
+      </div>
+      <div class="suggestions">
+        <div class="suggestion-chip" onclick="usePrompt('remove duplicates')">remove duplicates</div>
+        <div class="suggestion-chip" onclick="usePrompt('drop rows with missing values')">drop missing rows</div>
+        <div class="suggestion-chip" onclick="usePrompt('fill missing values with median')">fill with median</div>
+        <div class="suggestion-chip" onclick="usePrompt('sort by first column ascending')">sort ascending</div>
+        <div class="suggestion-chip" onclick="usePrompt('fill missing with mode')">fill with mode</div>
+      </div>
+    </div>
+
+    <!-- Log Card (hidden until first clean) -->
+    <div class="card hidden" id="logCard">
+      <div class="section-header">
+        <div class="card-title" style="margin-bottom:0">03 — Operation Log</div>
+        <button class="btn btn-sm btn-ghost" onclick="clearLog()">Clear</button>
+      </div>
+      <div class="log-container" id="logContainer"></div>
+    </div>
+
+    <!-- Preview Card (hidden until upload) -->
+    <div class="card hidden" id="previewCard">
+      <div class="section-header">
+        <div class="card-title" style="margin-bottom:0">04 — Dataset Preview (first 10 rows)</div>
+        <button class="btn btn-sm btn-success" onclick="downloadCSV()">⬇ Download Cleaned CSV</button>
+      </div>
+
+      <!-- Missing summary -->
+      <div id="missingSummary" class="missing-grid" style="margin-bottom:14px"></div>
+
+      <div class="table-wrapper">
+        <table id="previewTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let columns = [];
+    let missingMap = {};
+
+    // --- Upload ---
+    const fileInput = document.getElementById('fileInput');
+    const uploadZone = document.getElementById('uploadZone');
+
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) handleUpload(file);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) handleUpload(fileInput.files[0]);
+    });
+
+    async function handleUpload(file) {
+      setStatus('loading', `Uploading ${file.name}...`);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (data.error) { setStatus('error', data.error); return; }
+
+        columns = data.columns;
+        missingMap = data.missing;
+
+        document.getElementById('statRows').textContent = data.shape[0];
+        document.getElementById('statCols').textContent = data.shape[1];
+        const totalMissing = Object.values(data.missing).reduce((a, b) => a + b, 0);
+        document.getElementById('statMissing').textContent = totalMissing;
+        document.getElementById('statDupes').textContent = data.duplicates;
+
+        document.getElementById('statsSection').classList.remove('hidden');
+        document.getElementById('promptCard').classList.remove('hidden');
+        document.getElementById('previewCard').classList.remove('hidden');
+        document.getElementById('uploadCard').classList.add('active');
+
+        renderTable(data.columns, data.preview, data.missing);
+        renderMissingSummary(data.missing);
+        setStatus('ready', `Loaded: ${file.name} — ${data.shape[0]} rows × ${data.shape[1]} columns`);
+      } catch (e) {
+        setStatus('error', 'Upload failed. Check server.');
+      }
+    }
+
+    // --- Clean ---
+    async function runClean() {
+      const prompt = document.getElementById('promptInput').value.trim();
+      if (!prompt) return;
+
+      const btn = document.getElementById('cleanBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Running';
+      setStatus('loading', 'Sending to AI...');
+
+      try {
+        const res = await fetch('/clean', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          setStatus('error', data.error);
+          addLog('error', data.error, '');
+          return;
+        }
+
+        // Update stats
+        document.getElementById('statRows').textContent = data.shape[0];
+        document.getElementById('statCols').textContent = data.shape[1];
+        const totalMissing = Object.values(data.missing).reduce((a, b) => a + b, 0);
+        document.getElementById('statMissing').textContent = totalMissing;
+        document.getElementById('statDupes').textContent = data.duplicates;
+
+        columns = data.columns;
+        missingMap = data.missing;
+
+        // Log each operation
+        document.getElementById('logCard').classList.remove('hidden');
+        data.log.forEach((msg, i) => {
+          const actionName = data.actions[i] ? data.actions[i].action : '';
+          addLog('success', msg, actionName);
+        });
+
+        // Re-render table
+        renderTable(data.columns, data.preview, data.missing);
+        renderMissingSummary(data.missing);
+
+        document.getElementById('promptInput').value = '';
+        setStatus('ready', `Done — ${data.shape[0]} rows × ${data.shape[1]} columns`);
+
+      } catch (e) {
+        setStatus('error', 'Request failed.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Run →';
+      }
+    }
+
+    // Allow Enter key
+    document.getElementById('promptInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') runClean();
+    });
+
+    function usePrompt(text) {
+      document.getElementById('promptInput').value = text;
+      document.getElementById('promptInput').focus();
+    }
+
+    // --- Table render ---
+    function renderTable(cols, rows, missing) {
+      const head = document.getElementById('tableHead');
+      const body = document.getElementById('tableBody');
+
+      head.innerHTML = '<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+      body.innerHTML = rows.map(row =>
+        '<tr>' + cols.map(c => {
+          const val = row[c];
+          const isEmpty = val === '' || val === null || val === undefined;
+          return `<td class="${isEmpty ? 'missing-val' : ''}">${isEmpty ? 'null' : val}</td>`;
+        }).join('') + '</tr>'
+      ).join('');
+    }
+
+    function renderMissingSummary(missing) {
+      const container = document.getElementById('missingSummary');
+      const entries = Object.entries(missing).filter(([, v]) => v > 0);
+      if (entries.length === 0) {
+        container.innerHTML = '<div style="font-size:12px;color:var(--success)">✓ No missing values</div>';
+      } else {
+        container.innerHTML = entries.map(([col, count]) =>
+          `<div class="missing-badge">${col}<span>${count} missing</span></div>`
+        ).join('');
+      }
+    }
+
+    // --- Log ---
+    function addLog(type, text, action) {
+      const container = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `
+        <div class="log-dot ${type}"></div>
+        <div>
+          <div class="log-text">${text}</div>
+          ${action ? `<div class="log-action">[${action}]</div>` : ''}
+        </div>
+      `;
+      container.prepend(entry);
+    }
+
+    function clearLog() {
+      document.getElementById('logContainer').innerHTML = '';
+    }
+
+    // --- Status ---
+    function setStatus(state, text) {
+      const dot = document.getElementById('statusDot');
+      const label = document.getElementById('statusText');
+      dot.className = 'status-dot ' + state;
+      label.textContent = text;
+    }
+
+    // --- Download ---
+    function downloadCSV() {
+      window.location.href = '/download';
+    }
+  </script>
+</body>
+</html>

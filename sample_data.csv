@@ -1,0 +1,13 @@
+name,age,salary,department,city
+Alice,28,55000,Engineering,Mumbai
+Bob,,62000,Marketing,Delhi
+Charlie,35,48000,Engineering,Mumbai
+Alice,28,55000,Engineering,Mumbai
+David,42,,HR,Chennai
+Eve,31,71000,Engineering,Bangalore
+Frank,,58000,Marketing,Delhi
+Grace,29,53000,,Mumbai
+Henry,38,66000,HR,Chennai
+Ivy,26,49000,Engineering,
+Bob,,62000,Marketing,Delhi
+Jack,33,57000,Engineering,Bangalore
